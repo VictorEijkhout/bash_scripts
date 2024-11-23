@@ -1,0 +1,36 @@
+# -*- sh -*-
+
+function usage() {
+    echo "Usage: $0  [ -d dir ] [ -v ] symbol"
+}
+
+if [ $# -eq 0 ] ; then 
+    usage && exit 0
+fi 
+
+dir=
+verbose=
+while [ $# -gt 1 ] ; do
+    if [ $1 = "-h" ] ; then 
+	usage && exit 0
+    elif [ $1 = "-d" ] ; then
+	shift && dir=$1 && shift
+    elif [ $1 = "-v" ] ; then 
+	verbose=1 && shift
+    fi
+done
+symbol=$1
+
+if [ ! -z ${dir} ] ; then 
+    cd "${dir}"
+fi
+
+for s in *.so *.a ; do 
+    founds=$( nm "$s" | grep -i $symbol | wc -l )
+    if [ $founds -gt 0 ] ; then 
+	echo "Found in $s"
+	if [ ! -z $verbose ] ; then 
+	    nm "$s" | grep -i $symbol
+	fi
+    fi
+done

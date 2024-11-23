@@ -1,0 +1,91 @@
+#! /usr/bin/env python3
+################################################################
+####
+#### script for parsing a line and finding all files it in.
+####
+#### probable use:
+#### make myprogram | xargs findfiles
+####
+################################################################
+
+import os
+import re
+import sys
+
+script = sys.argv[0]
+sys.argv = sys.argv[1:]
+
+def usage():
+    global script
+    print(f"""Usage: {sys.argv[{script}]} [ --e ] [ -vV ] [ -d ] word [ wod [ ... ] ] 
+optios:
+ -e : report errors for files not found
+ -v : verbose output
+ -V : very verbose output
+""")
+
+opt = True
+verbose = 0
+error = False
+while opt:
+    if False:
+        continue
+    elif sys.argv[0]=="-h":
+        usage(); sys.exit(0)
+    elif sys.argv[0]=="-e":
+        error = True; sys.argv = sys.argv[1:]
+    elif sys.argv[0]=="-v":
+        verbose = 1; sys.argv = sys.argv[1:]
+    elif sys.argv[0]=="-V":
+        verbose = 2; sys.argv = sys.argv[1:]
+    else: opt = False
+
+library_directories = []
+library_files = []
+other_files = []
+for w in sys.argv[1:]:
+    if lib_directive := re.match(r"-L(.*)",w):
+        path = lib_directive.groups()[0]
+        if verbose>0: print(f"Found path: <<{path}>>")
+        library_directories.append(path)
+    elif lib_file := re.match(r"-l(.*)",w):
+        lib = lib_file.groups()[0]
+        if verbose>0: print(f"found library <<{lib}>>")
+        library_files.append(lib)
+    elif re.match(r"-",w):
+        if verbose>0: print(f"skipping option <<{w}")
+        continue
+    else:
+        if verbose>0: print(f"found library << {w}>>")
+        other_files.append(w)
+
+for f in other_files:
+    if os.path.isfile(f):
+        if verbose>0: print(f"File: <<{f}>>")
+        print(f"{f}")
+    elif error:
+        print(f"Can not find file <<{f}>>")
+
+if verbose>0:
+    print(f"Trying to find libraries: {library_files}\n    along: {library_directories}")
+for f in library_files:
+    for l in library_directories:
+        if f not in library_files: break # maybe it was removed
+        a = os.path.join(l,f"lib{f}.a")
+        if verbose>1: print(f"Try to find << {a}>>")
+        if os.path.isfile(a):
+            if verbose>0: print(f"Static: <<{a}>>")
+            print(f"{a}")
+            library_files.remove(f)
+            continue
+        s = os.path.join(l,f"lib{f}.so")
+        if verbose>1: print(f"Try to find << {s}>>")
+        if os.path.isfile(s):
+            if verbose>0: print(f"Shared: <<{s}>>")
+            print(f"{s}")
+            library_files.remove(f)
+            continue
+if len(library_files)==0:
+    if error:
+        print(f"Could not find libraries: {library_files}")
+

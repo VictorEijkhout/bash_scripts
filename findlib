@@ -1,0 +1,32 @@
+#!/bin/bash
+################################################################
+####
+#### script for parsing a line and finding mention of a library in it
+#### great for really long link lines
+####
+#### probable use:
+#### make myprogram | xargs findlib metis
+####
+################################################################
+
+
+if [ $# -lt 2 ] ; then
+  echo "Usage: $0 lib dir [ dir [ dir ... ] ]"
+  echo "not: $0 $*"
+  #exit 1
+fi
+
+lib=$1
+shift
+while [ $# -gt 0 ] ; do
+    dir=$1
+    shift
+    dir="/${dir#*/}"
+    if [ ! -z "$dir" -a -d "$dir" ] ; then
+	# echo "finding <<$lib>> in <<$dir>>"
+	# eval ls $dir/*${lib}* 2>/dev/null
+	for f in ` eval ls $dir/*${lib}* ` ; do 
+	    echo "found $f" 
+	done 2>/dev/null
+    fi
+done
