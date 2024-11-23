@@ -4,8 +4,9 @@
 #### script for parsing a line and finding mention of a library in it
 #### great for really long link lines
 ####
-#### probable use:
-#### make myprogram | xargs findlib metis
+#### splitpath MODULEPATH
+#### see also 
+#### export MODULEPATH=$( splitpath MODULEPATH | grep -v eijkhout | assemblepath )
 ####
 ################################################################
 
