@@ -1,7 +1,7 @@
 # -*- sh -*-
 
 function usage() {
-    echo "Usage: $0  [ -d dir ] [ -t (trace) ] [ -v (verbose) ] symbol"
+    echo "Usage: $0  [ -d dir ] [ -t (trace) ] [ -v (verbose) ] [ -w (wildcard) ] symbol"
 }
 
 if [ $# -eq 0 -o $1 = "-h" ] ; then 
@@ -11,6 +11,7 @@ fi
 dir=.
 trace=
 verbose=
+wildcard=
 while [ $# -gt 1 ] ; do
     if [ $1 = "-h" ] ; then 
 	usage && exit 0
@@ -20,6 +21,8 @@ while [ $# -gt 1 ] ; do
 	trace=1 && shift
     elif [ $1 = "-v" ] ; then 
 	verbose=1 && shift
+    elif [ $1 = "-w" ] ; then 
+	wildcard=1 && shift
     fi
 done
 symbol=$1
@@ -27,10 +30,20 @@ symbol=$1
 for s in $( find ${dir} -name lib\* -print ) ; do
     if [ ! -z "${trace}" ] ; then
 	echo "testing $s" ; fi
-    founds=$( nm -C "$s" 2>/dev/null | grep -i $symbol | awk '$2=="T" {print}' | wc -l )
-    if [ $founds -gt 0 ] ; then
+    if [ "${wildcard}" = "1" ] ; then 
+	founds=$( nm -C "$s" 2>/dev/null | grep -i $symbol | awk '$2=="T" {print $3}' )
+	if [ ! -z "${founds}" ] ; then echo ${founds} ; fi
+	nfounds=$( echo "${founds}"  | wc -c )
+    else
+	founds=$( nm -C "$s" 2>/dev/null | grep -i $symbol | awk -v symbol="${symbol}" '$2=="T" && $3==symbol {print $3}' )
+	if [ ! -z "${founds}" ] ; then echo ${founds} ; fi
+	nfounds=$( echo "${founds}"  | wc -c )
+    fi
+    # empty string still has one character according to `wc -l'
+    if [ $nfounds -gt 1 ] ; then
 	echo "Found in $s"
 	if [ ! -z "${verbose}" ] ; then
+	    #echo "${founds}" | tr '\n' ' '
 	    nm -C "$s" 2>/dev/null | grep -i $symbol | awk '$2=="T" {print}'
 	fi
     fi
