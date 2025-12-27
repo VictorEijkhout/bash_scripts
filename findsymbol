@@ -1,7 +1,7 @@
 # -*- sh -*-
 
 function usage() {
-    echo "Usage: $0  [ -d dir ] [ -t (trace) ] [ -v (verbose) ] symbol"
+    echo "Usage: $0  [ -d dir ] [ -o (object files) ] [ -t (trace) ] [ -v (verbose) ] symbol"
 }
 
 if [ $# -eq 0 -o $1 = "-h" ] ; then 
@@ -9,6 +9,7 @@ if [ $# -eq 0 -o $1 = "-h" ] ; then
 fi 
 
 dir=.
+object=
 trace=
 verbose=
 while [ $# -gt 1 ] ; do
@@ -16,6 +17,8 @@ while [ $# -gt 1 ] ; do
 	usage && exit 0
     elif [ $1 = "-d" ] ; then
 	shift && dir=$1 && shift
+    elif [ $1 = "-o" ] ; then 
+	object=1 && shift
     elif [ $1 = "-t" ] ; then 
 	trace=1 && shift
     elif [ $1 = "-v" ] ; then 
@@ -35,3 +38,17 @@ for s in $( find ${dir} -name lib\* -print ) ; do
 	fi
     fi
 done
+
+if [ ! -z "${object}" ] ; then
+    for s in $( find ${dir} -name \*.o -print ) ; do
+	if [ ! -z "${trace}" ] ; then
+	    echo "testing $s" ; fi
+	founds=$( nm -C "$s" 2>/dev/null | grep -i $symbol | awk '$2=="T" {print}' | wc -l )
+	if [ $founds -gt 0 ] ; then
+	    echo "Found in $s"
+	    if [ ! -z "${verbose}" ] ; then
+		nm -C "$s" 2>/dev/null | grep -i $symbol | awk '$2=="T" {print}'
+	    fi
+	fi
+    done
+fi
