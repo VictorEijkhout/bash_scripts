@@ -34,7 +34,9 @@ for s in $( find ${dir} -name lib\* -print ) ; do
     if [ ! -z "${trace}" ] ; then
 	echo "testing $s" ; fi
     if [ "${wildcard}" = "1" ] ; then 
-	founds=$( nm -C "$s" 2>/dev/null | grep -i $symbol | awk '$2=="T" {print $3}' )
+	founds=$( nm -C "$s" 2>/dev/null \
+		      | grep -i $symbol \
+		      | awk '$2=="T" || $2=="W" {print $3}' )
 	if [ ! -z "${founds}" ] ; then echo ${founds} ; fi
 	nfounds=$( echo "${founds}"  | wc -c )
     else

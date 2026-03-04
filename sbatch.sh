@@ -46,8 +46,27 @@ if [ $# -eq 0 ] ; then
     usage && exit 1
 fi
 
+script=sbatch_script
+command=$*
+
 set -x
 cd "$dir"
-srun -A $project -p $partition -t $time -N $nodes -n $cores \
-    $interactive $gdb $*
+cat > "$script" <<EOF
+#!/bin/bash
+#SBATCH -J sbatch
+#SBATCH -o sbatch.o%j
+#SBATCH -e sbatch.o%j
+#SBATCH -A $project
+#SBATCH -p $partition
+#SBATCH -t $time
+#SBATCH -N $nodes
+#SBATCH -n $cores
+
+$command
+EOF
+
+sbatch "$script"
+
+# srun -A $project -p $partition -t $time -N $nodes -n $cores \
+#     $interactive $gdb $*
     
