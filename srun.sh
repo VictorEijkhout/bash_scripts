@@ -48,6 +48,8 @@ fi
 
 set -x
 cd "$dir"
-srun -A $project -p $partition -t $time -N $nodes -n $cores \
+srun \
+    --export=ALL \
+    -A $project -p $partition -t $time -N $nodes -n $cores \
     $interactive $gdb $*
     
