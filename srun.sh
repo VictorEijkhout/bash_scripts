@@ -88,3 +88,4 @@ srun \
     -A $project -p $partition -t $time -N $nodes -n $cores \
     $interactive $gdb ./${script}
     
+rm -f ${script}
