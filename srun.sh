@@ -25,6 +25,8 @@ single=
 while [ $# -gt 0 ] ; do
     if [ $1 = "-h" ] ; then
 	usage && exit 0
+    elif [ $1 = "-A" ] ; then
+	shift && project=$1 && shift
     elif [ $1 = "-N" ] ; then
 	shift && nodes=$1 && shift
     elif [ $1 = "-n" ] ; then
