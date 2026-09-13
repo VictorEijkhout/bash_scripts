@@ -29,18 +29,21 @@ while [ $# -gt 1 ] ; do
     fi
 done
 symbol=$1
+if [ ! -z "${verbose}" ] ; then
+    echo "Searching symbol: ${symbol}"
+fi
 
 for s in $( find ${dir} -name lib\* -print ) ; do
     if [ ! -z "${trace}" ] ; then
 	echo "testing $s" ; fi
     if [ "${wildcard}" = "1" ] ; then 
 	founds=$( nm -C "$s" 2>/dev/null \
-		      | grep -i $symbol \
+		      | grep -i "$symbol" \
 		      | awk '$2=="T" || $2=="W" {print $3}' )
 	if [ ! -z "${founds}" ] ; then echo ${founds} ; fi
 	nfounds=$( echo "${founds}"  | wc -c )
     else
-	founds=$( nm -C "$s" 2>/dev/null | grep -i $symbol | awk -v symbol="${symbol}" '$2=="T" && $3==symbol {print $3}' )
+	founds=$( nm -C "$s" 2>/dev/null | grep -i "${symbol}" | awk -v symbol="${symbol}" '$2=="T" && $3==symbol {print $3}' )
 	if [ ! -z "${founds}" ] ; then echo ${founds} ; fi
 	nfounds=$( echo "${founds}"  | wc -c )
     fi
@@ -49,7 +52,7 @@ for s in $( find ${dir} -name lib\* -print ) ; do
 	echo "Found in $s"
 	if [ ! -z "${verbose}" ] ; then
 	    #echo "${founds}" | tr '\n' ' '
-	    nm -C "$s" 2>/dev/null | grep -i $symbol | awk '$2=="T" {print}'
+	    nm -C "$s" 2>/dev/null | grep -i "${symbol}" | awk '$2=="T" {print}'
 	fi
     fi
 done
@@ -58,11 +61,11 @@ if [ ! -z "${object}" ] ; then
     for s in $( find ${dir} -name \*.o -print ) ; do
 	if [ ! -z "${trace}" ] ; then
 	    echo "testing $s" ; fi
-	founds=$( nm -C "$s" 2>/dev/null | grep -i $symbol | awk '$2=="T" {print}' | wc -l )
+	founds=$( nm -C "$s" 2>/dev/null | grep -i "${symbol}" | awk '$2=="T" {print}' | wc -l )
 	if [ $founds -gt 0 ] ; then
 	    echo "Found in $s"
 	    if [ ! -z "${verbose}" ] ; then
-		nm -C "$s" 2>/dev/null | grep -i $symbol | awk '$2=="T" {print}'
+		nm -C "$s" 2>/dev/null | grep -i "${symbol}" | awk '$2=="T" {print}'
 	    fi
 	fi
     done
