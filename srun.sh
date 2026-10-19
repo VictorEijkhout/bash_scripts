@@ -64,12 +64,14 @@ cd "$dir"
 export commands="$*"
 script=".srun_script.sh"
 if [ -z "${single}" ] ; then
-    # execute as such
+    # parallel (non-single) case:
+    # execute as such by srun
     cat <<EOF >${script}
 #!/bin/bash
 $commands
 EOF
 else
+    # single case:
     # execute only on proc zero
     cat <<EOF >${script}
 #!/bin/bash
