@@ -18,6 +18,7 @@ function gitpush () {
 }
 
 function modulelist () {
+    local root=$1
     local compiler=$( module -t list ${TACC_FAMILY_COMPILER} 2>&1 );
     local mpi=$( module -t list ${TACC_FAMILY_MPI} 2>&1 );
     local modules=$( module -t list 2>&1 | grep -v $compiler | grep -v $mpi | sort );
@@ -25,7 +26,14 @@ function modulelist () {
     do
         if [ $m = "cont" ]; then
             echo "----------------";
-        else
+        elif [ ! -z "$root" ] ; then
+            loc=$(module -t show $m 2>&1 \
+		      | sed -e 's?'${root}'?ROOT?' \
+		      | sed -e 's?'${WORK}'?\$\{WORK\}?' \
+		      | sed -e 's?'${SCRATCH}'?\$\{SCRATCH\}?' \
+	       );
+            echo "$m : $loc";
+	else
             loc=$(module -t show $m 2>&1 \
 		      | sed -e 's?'${WORK}'?\$\{WORK\}?' \
 		      | sed -e 's?'${SCRATCH}'?\$\{SCRATCH\}?' \
@@ -33,6 +41,9 @@ function modulelist () {
             echo "$m : $loc";
         fi;
     done
+    if [ ! -z "${root}" ] ; then
+	echo "(where ROOT=${root})"
+    fi
 }
 
 function modulereset () {
